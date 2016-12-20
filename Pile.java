@@ -20,6 +20,28 @@ public class Pile extends GCompound {
 		layoutCards();
 	}
 	
+	public Pile removeSubPile(int numCards) {
+	    if (cards.get(numCards-1).isFaceUp()) {
+		return new Pile(cards.deal(numCards));
+	    }
+	    return null;
+	}
+	
+	public void addSubPile(Pile sub) {
+	    cards.addAll(sub.getCards());
+	    layoutCards();
+	}
+	
+	public Deck getCards() {
+	    return cards;
+	}
+	
+	public Pile removeSubPile(Card card) {
+	    int index = cards.indexOf(card);
+	    if (index == -1) return null;
+	    return removeSubPile(index+1);
+	}
+	
 	/**
 	 * Returns the card at the given point on the canvas
 	 * @param x the x coordinate of the point
@@ -30,11 +52,18 @@ public class Pile extends GCompound {
 		return (Card) getElementAt(getLocalPoint(x, y));
 	}
 	
+	public void flipTopCard() {
+	    GCard top = (GCard)cards.get(0);
+	    if (!top.isFaceUp()) {
+		top.turnFaceUp();
+	    }
+	}
+	
 	private void layoutCards() {
 		double offset = OFFSET_RATIO * GCard.cardHeight();
 		for (int i = 0; i < cards.size(); i++) {
 			add((GCard)cards.get(cards.size()-1-i), 0.0, i * offset);
 		}
-		cards.get(0).flipOver();
 	}
+		
 }
