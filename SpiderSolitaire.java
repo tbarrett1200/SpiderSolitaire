@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
 
 import acm.graphics.GObject;
 import acm.graphics.GScalable;
@@ -57,6 +58,12 @@ public class SpiderSolitaire extends GraphicsProgram {
 	private static final int INITIAL_WIDTH = 1000;
 	private static final int INITIAL_HEIGHT = 600;
 
+	private static final int PILE_COUNT = 10;
+	private static final int GAP_COUNT = PILE_COUNT + 1;
+	
+	private static final double PILE_WIDTH = GCard.cardWidth();
+	private static final double GAP_WIDTH = (INITIAL_WIDTH - PILE_WIDTH*PILE_COUNT)/GAP_COUNT;
+	
 	public static void main(String[] args) {
 		new SpiderSolitaire().start(args);
 	}
@@ -74,8 +81,28 @@ public class SpiderSolitaire extends GraphicsProgram {
 		// Difficulty diff = Difficulty.ADVANCED;
 		
 		// put code here to create a pack, shuffle it, and deal the initial cards
+		Pack pack = new Pack(diff);
+		pack.shuffle();
+	
+		for (int i=0; i<PILE_COUNT; i++) {
+			int numCards = i < 4 ? 5 : 4;
+			add(new Pile(pack.deal(numCards)), (i+1)*GAP_WIDTH + i*PILE_WIDTH, GAP_WIDTH);
+		}
 
+		addMouseListeners();
+		
+		
 		catchResizeEvents();
+	}
+	
+	
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		GObject g = getElementAt(e.getX(), e.getY());
+		if (g instanceof Pile) {
+			Card c = ((Pile)g).selectCard(e.getX(), e.getY());
+			c.flipOver();
+		}
 	}
 	
 	/**
