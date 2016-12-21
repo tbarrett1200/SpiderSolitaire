@@ -17,23 +17,23 @@ public class Pile extends GCompound {
 	 */
 	public Pile(Deck cards) {
 		this.cards = cards;
+		for(Card c: cards) {
+		    add((GCard)c);
+		}
 		layoutCards();
 	}
 	
+	/**
+	 * Removes and returns a pile containing the given number of cards
+	 * @param numCards
+	 * @return
+	 */
 	public Pile removeSubPile(int numCards) {
 	    if (cards.get(numCards-1).isFaceUp()) {
-		return new Pile(cards.deal(numCards));
+		Deck subDeck = cards.deal(numCards);
+		return new Pile(subDeck);
 	    }
 	    return null;
-	}
-	
-	public void addSubPile(Pile sub) {
-	    cards.addAll(sub.getCards());
-	    layoutCards();
-	}
-	
-	public Deck getCards() {
-	    return cards;
 	}
 	
 	public Pile removeSubPile(Card card) {
@@ -42,6 +42,20 @@ public class Pile extends GCompound {
 	    return removeSubPile(index+1);
 	}
 	
+	
+	public void addSubPile(Pile sub) {
+	    cards.addAll(0, sub.getCards());
+	    for (Card c: sub.getCards()) {
+		add((GCard)c);
+	    }
+	    layoutCards();
+	}
+	
+	public Deck getCards() {
+	    return cards;
+	}
+	
+
 	/**
 	 * Returns the card at the given point on the canvas
 	 * @param x the x coordinate of the point
@@ -62,7 +76,9 @@ public class Pile extends GCompound {
 	private void layoutCards() {
 		double offset = OFFSET_RATIO * GCard.cardHeight();
 		for (int i = 0; i < cards.size(); i++) {
-			add((GCard)cards.get(cards.size()-1-i), 0.0, i * offset);
+		    GCard c = (GCard)cards.get(cards.size()-1-i);
+		    c.sendToFront();
+		    c.setLocation(0.0, i * offset);
 		}
 	}
 		

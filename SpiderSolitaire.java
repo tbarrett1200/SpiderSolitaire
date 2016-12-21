@@ -83,18 +83,15 @@ public class SpiderSolitaire extends GraphicsProgram {
 	setSize(INITIAL_WIDTH, INITIAL_HEIGHT);
 	setBackground(Color.GREEN.darker().darker());
 
-	// Difficulty diff = Difficulty.BEGINNER;
 	Difficulty diff = Difficulty.BEGINNER;
-	// Difficulty diff = Difficulty.ADVANCED;
-
-	// put code here to create a pack, shuffle it, and deal the initial
-	// cards
 	Pack pack = new Pack(diff);
 	pack.shuffle();
 
 	for (int i = 0; i < PILE_COUNT; i++) {
 	    int numCards = i < 4 ? 5 : 4;
-	    add(new Pile(pack.deal(numCards)), (i + 1) * GAP_WIDTH + i * PILE_WIDTH, GAP_WIDTH);
+	    Pile p = new Pile(pack.deal(numCards));
+	    p.flipTopCard();
+	    add(p, (i + 1) * GAP_WIDTH + i * PILE_WIDTH, GAP_WIDTH);
 	}
 
 	addMouseListeners();
@@ -111,23 +108,45 @@ public class SpiderSolitaire extends GraphicsProgram {
         super.mouseMoved(e);
     }
     
+    private void returnSelected() {
+	previous.addSubPile(selected);
+	previous = null;
+	selected = null;
+    }
+    
+    private void addSelected(Pile p) {
+	p.addSubPile(selected);
+	previous = null;
+	selected = null;
+    }
+    
     @Override
     public void mouseClicked(MouseEvent e) {
-	Pile pile = (Pile)getElementAt(e.getX(), e.getY());
-
-	if (pile == null) return;
 	
-	Pile sub = pile.removeSubPile(pile.selectCard(e.getX(), e.getY()));
+	if (selected != null) remove(selected); //removes the selected pile to avoid interference with getElement
 	
-	if (sub == null) {
-	    pile.flipTopCard();
-	} else if (selected == null){
-	    previous = pile;
-	    selected = sub;
-	    add(selected, e.getX(), e.getY());
+	Pile pile = (Pile)getElementAt(e.getX(), e.getY()); //finds the pile pile that was clicked 
+	
+	if (selected != null) {
+	    if (pile == null) {
+		returnSelected();
+	    } else {
+		addSelected(pile);
+	    }
+	    return;
 	} else {
-	    remove(selected);
-	    previous.addSubPile(selected);
+	    if (pile == null) {
+		return;
+	    } else {
+		Pile subPile = pile.removeSubPile(pile.selectCard(e.getX(), e.getY()));
+		if (subPile == null) {
+		    pile.flipTopCard();
+		} else {
+		    previous = pile;
+		    selected = subPile;
+		    add(selected, e.getX(), e.getY());
+		}
+	    }
 	}
     }
     
