@@ -42,8 +42,7 @@ public class Deck extends ArrayList<Card> {
 	 * @return an array of cards from the top of the deck
 	 */
 	public Deck deal(int numCards) {
-		if (size() < numCards)
-			return null;
+		if (size() < numCards) return null;
 
 		Deck cards = new Deck(subList(0, numCards));
 		removeRange(0, numCards);

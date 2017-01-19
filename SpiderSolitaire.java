@@ -2,9 +2,16 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+
+import org.omg.Messaging.SyncScopeHelper;
 
 import acm.graphics.GObject;
 import acm.graphics.GScalable;
@@ -60,156 +67,192 @@ import acm.program.GraphicsProgram;
 @SuppressWarnings("serial")
 public class SpiderSolitaire extends GraphicsProgram {
 
-	private static final int INITIAL_WIDTH = 1000;
-	private static final int INITIAL_HEIGHT = 600;
+    private static final int INITIAL_WIDTH = 1000;
+    private static final int INITIAL_HEIGHT = 600;
 
-	private static final int PILE_COUNT = 10;
-	private static final int GAP_COUNT = PILE_COUNT + 1;
+    private static final int PILE_COUNT = 10;
+    private static final int GAP_COUNT = PILE_COUNT + 1;
 
-	private static final double PILE_WIDTH = GCard.cardWidth();
-	private static final double GAP_WIDTH = (INITIAL_WIDTH - PILE_WIDTH * PILE_COUNT) / GAP_COUNT;
+    private static final double PILE_WIDTH = GCard.cardWidth();
+    private static final double GAP_WIDTH = (INITIAL_WIDTH - PILE_WIDTH * PILE_COUNT) / GAP_COUNT;
 
-	private Pile selected;
-	private Pile origin;
-	private Pack pack;
-	private Difficulty difficulty;
-	private Pile[] piles = new Pile[PILE_COUNT];
-	
-	public static void main(String[] args) {
-		new SpiderSolitaire().start(args);
-	}
+    private Pile selected;
+    private Pile origin;
+    private Pack pack;
+    private Difficulty difficulty;
+    private Pile[] piles = new Pile[PILE_COUNT];
 
-	/**
-	 * Initializes the deck on the canvas and sets up event handling.
-	 */
-	@Override
-	public void init() {
-		setSize(INITIAL_WIDTH, INITIAL_HEIGHT);
-		setBackground(Color.GREEN.darker().darker());
+    private JLabel statusMessage;
+    private JButton newGameButton;
+    private JComboBox<Difficulty> difficultyComboBox;
 
-		difficulty = Difficulty.BEGINNER;
-		pack = new Pack(difficulty);
-		pack.shuffle();
+    public static void main(String[] args) {
+	new SpiderSolitaire().start(args);
+    }
 
-		for (int i = 0; i < PILE_COUNT; i++) {
-			int numCards = i < 4 ? 5 : 4;
-			Pile p = new Pile(pack.deal(numCards));
-			piles[i]=p;
-			p.flipTopCard();
-			add(p, (i + 1) * GAP_WIDTH + i * PILE_WIDTH, GAP_WIDTH);
+    /**
+     * Initializes the deck on the canvas and sets up event handling.
+     */
+    @Override
+    public void init() {
+	setSize(INITIAL_WIDTH, INITIAL_HEIGHT);
+	setBackground(Color.GREEN.darker().darker());
+
+	add(statusMessage = new JLabel("Welcome to Spider Solitaire"), NORTH);
+	add(newGameButton = new JButton("New Game"), SOUTH);
+	add(difficultyComboBox = new JComboBox<Difficulty>(Difficulty.values()), SOUTH);
+
+	newGameButton.addActionListener(event -> startNewGame());
+
+	catchResizeEvents();
+    }
+
+    public void startNewGame() {
+	removeAll();
+
+	difficulty = (Difficulty) difficultyComboBox.getSelectedItem();
+	pack = new Pack(difficulty);
+	pack.shuffle();
+
+	for (int i = 0; i < PILE_COUNT; i++) {
+	    int numCards = i < 4 ? 5 : 4;
+	    Pile p = new Pile(pack.deal(numCards));
+	    piles[i] = p;
+	    p.flipTopCard();
+	    add(p, (i + 1) * GAP_WIDTH + i * PILE_WIDTH, GAP_WIDTH);
+	    
+	    p.addMouseListener(new MouseAdapter() {
+		@Override
+		public void mousePressed(MouseEvent arg0) {
+		   System.out.println("Pressed");
+		    
 		}
-		addDrawButton();
-		addMouseListeners();
-		catchResizeEvents();
-		
-	}
-
-	@Override
-	public void mouseMoved(MouseEvent e) {
-		if (selected != null) {
-			selected.setLocation(e.getX(), e.getY());
+		@Override
+		public void mouseReleased(MouseEvent arg0) {
+		   System.out.println("Released");
+		    
 		}
-		super.mouseMoved(e);
+	    });
+	    
+	    p.addMouseMotionListener(new MouseMotionAdapter() {
+		@Override
+		public void mouseDragged(MouseEvent e) {
+		    
+		}
+	    });
+	    
+	    addMouseListeners();
+	}
+	addDrawButton();
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+	if (selected != null) {
+	    selected.setLocation(e.getX(), e.getY());
+	}
+	super.mouseMoved(e);
+    }
+
+    private void addDrawButton() {
+	JButton button = new JButton("Draw");
+	button.addActionListener((ActionEvent e) -> {
+	    for (Pile p : piles) {
+		GCard card = (GCard) pack.deal();
+		if (card != null) {
+		    p.putDown((GCard) pack.deal().flipOver());
+		}
+	    }
+	});
+	add(button, SOUTH);
+    }
+
+    private void returnSelected() {
+	origin.putDown(selected);
+	origin = null;
+	selected = null;
+    }
+
+    private void addSelected(Pile p) {
+	if (p.canPutDown(selected)) {
+	    p.putDown(selected);
+	} else {
+	    returnSelected();
+	}
+	origin = null;
+	selected = null;
+    }
+
+    private boolean hasPileSelected() {
+	return selected != null;
+    }
+
+    private void selectPile(Pile origin, Pile selected) {
+	this.selected = selected;
+	this.origin = origin;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+	// removes the selected pile (the one following the mouse) to avoid
+	// interference with getElement
+	// otherwise getElementAt would always return the selected pile
+	if (hasPileSelected()) {
+	    remove(selected);
 	}
 
-	private void addDrawButton() {
-		JButton button = new JButton("Draw");
-		button.addActionListener((ActionEvent e)-> {
-			for (Pile p: piles) {
-				GCard card = (GCard)pack.deal();
-				if (card!=null) {
-				p.putDown((GCard)pack.deal().flipOver());
-				}
-			}
-		});
-		add(button, SOUTH);
+	// finds the pile that was clicked on
+	Pile pile = (Pile) getElementAt(e.getX(), e.getY());
 
-	}
-	private void returnSelected() {
-		origin.putDown(selected);
-		origin = null;
-		selected = null;
-	}
-
-	private void addSelected(Pile p) {
-		if (p.canPutDown(selected)) {
-			p.putDown(selected);
+	if (hasPileSelected()) {
+	    if (pile == null) {
+		returnSelected();
+	    } else {
+		addSelected(pile);
+	    }
+	} else {
+	    if (pile == null) {
+		return;
+	    } else {
+		Pile subPile = pile.pickUp(pile.getCard(e.getX(), e.getY()));
+		if (subPile == null) {
+		    pile.flipTopCard();
 		} else {
-			returnSelected();
+		    selectPile(pile, subPile);
+		    add(selected, e.getX(), e.getY());
 		}
-		origin = null;
-		selected = null;
+	    }
 	}
+    }
 
-	private boolean hasPileSelected() {
-		return selected != null;
-	}
-	
-	private void selectPile(Pile origin, Pile selected) {
-		this.selected = selected;
-		this.origin = origin;
-	}
-	
-	@Override
-	public void mouseClicked(MouseEvent e) {
+    /**
+     * Sets up the handler for resize events. This handler catches resize
+     * events, rescales the (GScalable) objects, and adjusts the locations of
+     * all GObjects. It does not adjust the font size for GLabels and such.
+     */
+    private double wid, ht; // width and height of the canvas (needed for
+    // resizing)
 
-		//removes the selected pile (the one following the mouse) to avoid interference with getElement
-		//otherwise getElementAt would always return the selected pile
-		if (hasPileSelected()) {
-			remove(selected);
-		}
+    private void catchResizeEvents() {
+	wid = getWidth();
+	ht = getHeight();
 
-		//finds the pile that was clicked on
-		Pile pile = (Pile) getElementAt(e.getX(), e.getY());
-
-		if (hasPileSelected()) {
-			if (pile == null) {
-				returnSelected();
-			} else {
-				addSelected(pile);
+	addComponentListener(new ComponentAdapter() {
+	    public void componentResized(ComponentEvent e) {
+		double scaleX = getWidth() / wid, scaleY = getHeight() / ht;
+		for (int i = 0; i < getElementCount(); i++) {
+		    Object obj = getElement(i);
+		    if (obj instanceof GObject) {
+			if (obj instanceof GScalable) {
+			    ((GScalable) obj).scale(scaleX, scaleY);
 			}
-		} else {
-			if (pile == null) {
-				return;
-			} else {
-				Pile subPile = pile.pickUp(pile.getCard(e.getX(), e.getY()));
-				if (subPile == null) {
-					pile.flipTopCard();
-				} else {
-					selectPile(pile, subPile);
-					add(selected, e.getX(), e.getY());
-				}
-			}
+			((GObject) obj).setLocation(((GObject) obj).getX() * scaleX, ((GObject) obj).getY() * scaleY);
+		    }
 		}
-	}
-
-	/**
-	 * Sets up the handler for resize events. This handler catches resize
-	 * events, rescales the (GScalable) objects, and adjusts the locations of
-	 * all GObjects. It does not adjust the font size for GLabels and such.
-	 */
-	private double wid, ht; // width and height of the canvas (needed for
-	// resizing)
-
-	private void catchResizeEvents() {
 		wid = getWidth();
 		ht = getHeight();
-
-		addComponentListener(new ComponentAdapter() {
-			public void componentResized(ComponentEvent e) {
-				double scaleX = getWidth() / wid, scaleY = getHeight() / ht;
-				for (int i = 0; i < getElementCount(); i++) {
-					Object obj = getElement(i);
-					if (obj instanceof GObject) {
-						if (obj instanceof GScalable) {
-							((GScalable) obj).scale(scaleX, scaleY);
-						}
-						((GObject) obj).setLocation(((GObject) obj).getX() * scaleX, ((GObject) obj).getY() * scaleY);
-					}
-				}
-				wid = getWidth();
-				ht = getHeight();
-			}
-		});
-	}
+	    }
+	});
+    }
 }

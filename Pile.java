@@ -116,10 +116,7 @@ public class Pile extends GCompound {
 	}
 
 	public boolean canPickUp(Card card) {
-		if (card == null) {
-			System.out.println("NULL");
-			return false;
-		}
+		if (card == null) return false;
 		
 		Suit suit = cards.get(0).getSuit();
 		Rank rank = cards.get(0).getRank();
@@ -141,7 +138,6 @@ public class Pile extends GCompound {
 			
 			if (diff != 1) {
 				System.out.println("NOT IN ORDER");
-				System.out.println("1:" + rank1 + " 2:" + rank2);
 				return false;
 			}
 			rank = c.getRank();
