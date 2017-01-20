@@ -8,7 +8,7 @@ import java.util.List;
  * @author Thomas Barrett
  */
 @SuppressWarnings("serial")
-public class Deck extends ArrayList<Card> {
+public class Deck<CardType extends Card> extends ArrayList<CardType> {
 
 	/**
 	 * Creates an empty deck
@@ -21,7 +21,7 @@ public class Deck extends ArrayList<Card> {
 	 * 
 	 * @param cards
 	 */
-	public Deck(List<Card> cards) {
+	public Deck(List<CardType> cards) {
 		addAll(cards);
 	}
 
@@ -30,10 +30,14 @@ public class Deck extends ArrayList<Card> {
 	 * 
 	 * @return the top card in the deck
 	 */
-	public Card deal() {
-		return size() > 0 ? remove(0) : null;
+	public CardType deal() {
+		return size() > 0 ? remove(size()-1) : null;
 	}
 
+	public CardType top() {
+	    return get(size()-1);
+	}
+	
 	/**
 	 * Removes and returns an sub deck from the top of the deck
 	 * 
@@ -41,11 +45,11 @@ public class Deck extends ArrayList<Card> {
 	 *            the number of cards to deal
 	 * @return an array of cards from the top of the deck
 	 */
-	public Deck deal(int numCards) {
+	public Deck<CardType> deal(int numCards) {
 		if (size() < numCards) return null;
 
-		Deck cards = new Deck(subList(0, numCards));
-		removeRange(0, numCards);
+		Deck<CardType> cards = new Deck<CardType>(subList(size()-numCards, size()));
+		removeRange(size()-numCards, size());
 
 		return cards;
 	}

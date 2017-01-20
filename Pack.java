@@ -4,7 +4,7 @@
  * @author Thomas Barrett
  */
 @SuppressWarnings("serial")
-public class Pack extends Deck {
+public class Pack extends Deck<GCard> {
 
 	/**
 	 * Create a pack with the given difficulty

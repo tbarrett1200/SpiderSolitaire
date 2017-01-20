@@ -8,11 +8,9 @@ import acm.graphics.GRect;
  * @author Thomas Barrett
  */
 @SuppressWarnings("serial")
-public class Pile extends GCompound {
+public class Pile extends GDeck {
 
-	private Deck cards;
-
-	private final GRect emptyRect;
+	private GRect emptyRect;
 	
 	private static final double OFFSET_RATIO = 1 / 5.0;
 
@@ -22,28 +20,17 @@ public class Pile extends GCompound {
 	 * @param cards
 	 *            the deck of cards to create the pile with
 	 */
-	public Pile(Deck cards) {
-		this.cards = cards;
-		for (Card c : cards) {
-			add((GCard) c);
-		}
-		emptyRect = emptyRect();
-		add(emptyRect);
+	public Pile(Deck<GCard> cards) {
+		super(cards);
+		addEmptyRect();
 		layout();
 	}
 
-	private GRect emptyRect() {
-		GRect rect = new GRect(GCard.cardWidth(), GCard.cardHeight());
-		return rect;
+	private void addEmptyRect() {
+	    emptyRect = new GRect(GCard.cardWidth(), GCard.cardHeight());
+	    add(emptyRect);
 	}
-	/**
-	 * Returns that deck of cards
-	 * 
-	 * @return the cards
-	 */
-	public Deck getCards() {
-		return cards;
-	}
+	
 
 	/**
 	 * Picks up a pile containing the given number of cards
@@ -53,8 +40,8 @@ public class Pile extends GCompound {
 	 * @return a new pile
 	 */
 	private Pile pickUp(int numCards) {
-		if (cards.get(numCards - 1).isFaceUp()) {
-			Deck subDeck = cards.deal(numCards);
+		if (deck.get(numCards - 1).isFaceUp()) {
+			Deck<GCard> subDeck = cards.deal(numCards);
 			layout();
 			return new Pile(subDeck);
 		}
@@ -90,7 +77,7 @@ public class Pile extends GCompound {
 	 * @param pile
 	 */
 	public void putDown(Pile pile) {
-		cards.addAll(0, pile.getCards());
+		cards.addAll(pile.getCards());
 		for (Card c : pile.getCards()) {
 			add((GCard) c);
 		}
@@ -118,8 +105,8 @@ public class Pile extends GCompound {
 	public boolean canPickUp(Card card) {
 		if (card == null) return false;
 		
-		Suit suit = cards.get(0).getSuit();
-		Rank rank = cards.get(0).getRank();
+		Suit suit = cards.top().getSuit();
+		Rank rank = cards.top().getRank();
 		
 		for(int i=1; i<=cards.indexOf(card); i++) {
 			Card c = cards.get(i);
@@ -149,7 +136,7 @@ public class Pile extends GCompound {
 		if (cards.isEmpty()) return true;
 		if (!cards.get(0).isFaceUp()) return false;
 		
-		Deck d = p.getCards();
+		Deck<GCard> d = p.getCards();
 		Card c = d.get(d.size()-1);
 		int rank1 = getRankOrdering(c.getRank());
 		int rank2 = getRankOrdering(cards.get(0).getRank());

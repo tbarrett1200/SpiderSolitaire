@@ -86,6 +86,8 @@ public class SpiderSolitaire extends GraphicsProgram {
     private JButton newGameButton;
     private JComboBox<Difficulty> difficultyComboBox;
 
+    private GDeck decks[] = new GDeck[5];
+    
     public static void main(String[] args) {
 	new SpiderSolitaire().start(args);
     }
@@ -120,52 +122,67 @@ public class SpiderSolitaire extends GraphicsProgram {
 	    piles[i] = p;
 	    p.flipTopCard();
 	    add(p, (i + 1) * GAP_WIDTH + i * PILE_WIDTH, GAP_WIDTH);
-	    
-	    p.addMouseListener(new MouseAdapter() {
-		@Override
-		public void mousePressed(MouseEvent arg0) {
-		   System.out.println("Pressed");
-		    
-		}
-		@Override
-		public void mouseReleased(MouseEvent arg0) {
-		   System.out.println("Released");
-		    
-		}
-	    });
-	    
-	    p.addMouseMotionListener(new MouseMotionAdapter() {
-		@Override
-		public void mouseDragged(MouseEvent e) {
-		    
-		}
-	    });
-	    
-	    addMouseListeners();
 	}
-	addDrawButton();
+
+	for (int i=0; i<5; i++) {
+	    decks[i] = new GDeck(pack.deal(10));
+	    GDeck deck = decks[i];
+	    deck.addMouseListener(new MouseAdapter() {
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		    for (int i=4; i>=0; i--) {
+			GDeck deck = decks[i];
+			if (!deck.isEmpty()) {
+			    for (Pile pile: piles) pile.add(deck.deal());
+			    break;
+			}
+		    }
+		}
+	    });
+	    add(deck, getWidth()-GCard.cardWidth()-GCard.cardWidth()*0.5*i, getHeight()-GCard.cardHeight());
+	}
+
+	
+	addMouseListeners();
     }
 
     @Override
-    public void mouseMoved(MouseEvent e) {
+    public void mouseDragged(MouseEvent e) {
 	if (selected != null) {
 	    selected.setLocation(e.getX(), e.getY());
 	}
-	super.mouseMoved(e);
     }
 
-    private void addDrawButton() {
-	JButton button = new JButton("Draw");
-	button.addActionListener((ActionEvent e) -> {
-	    for (Pile p : piles) {
-		GCard card = (GCard) pack.deal();
-		if (card != null) {
-		    p.putDown((GCard) pack.deal().flipOver());
+    @Override
+    public void mousePressed(MouseEvent e) {
+	GObject obj = getElementAt(e.getX(), e.getY());
+
+	if (obj instanceof Pile) {
+	    origin = (Pile) obj;
+	    if (origin != null) {
+		selected = origin.pickUp(origin.getCard(e.getX(), e.getY()));
+		if (selected == null) {
+		    origin.flipTopCard();
 		}
+		add(selected, e.getX(), e.getY());
 	    }
-	});
-	add(button, SOUTH);
+	}
     }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+	if (hasPileSelected())
+	    remove(selected);
+
+	GObject obj = getElementAt(e.getX(), e.getY());
+
+	if (obj instanceof Pile) {
+	    Pile target = (Pile) obj;
+	    if (target == null) returnSelected();
+	    else addSelected(target);
+	}
+    }
+
 
     private void returnSelected() {
 	origin.putDown(selected);
@@ -187,44 +204,6 @@ public class SpiderSolitaire extends GraphicsProgram {
 	return selected != null;
     }
 
-    private void selectPile(Pile origin, Pile selected) {
-	this.selected = selected;
-	this.origin = origin;
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-
-	// removes the selected pile (the one following the mouse) to avoid
-	// interference with getElement
-	// otherwise getElementAt would always return the selected pile
-	if (hasPileSelected()) {
-	    remove(selected);
-	}
-
-	// finds the pile that was clicked on
-	Pile pile = (Pile) getElementAt(e.getX(), e.getY());
-
-	if (hasPileSelected()) {
-	    if (pile == null) {
-		returnSelected();
-	    } else {
-		addSelected(pile);
-	    }
-	} else {
-	    if (pile == null) {
-		return;
-	    } else {
-		Pile subPile = pile.pickUp(pile.getCard(e.getX(), e.getY()));
-		if (subPile == null) {
-		    pile.flipTopCard();
-		} else {
-		    selectPile(pile, subPile);
-		    add(selected, e.getX(), e.getY());
-		}
-	    }
-	}
-    }
 
     /**
      * Sets up the handler for resize events. This handler catches resize
