@@ -4,7 +4,6 @@ import acm.graphics.GRect;
 
 /**
  * Models a pile of in spider solitaire
- * 
  * @author Thomas Barrett
  */
 @SuppressWarnings("serial")
@@ -13,18 +12,19 @@ public class Pile extends GDeck {
 	private GRect emptyRect;
 	
 	private static final double OFFSET_RATIO = 1 / 5.0;
-
+	private static final double OFFSET = OFFSET_RATIO * GCard.cardHeight();
+	private double scale = 1.0;
+	
 	/**
 	 * Creates a new pile with the given deck of cards
-	 * 
-	 * @param cards
-	 *            the deck of cards to create the pile with
+	 * @param cards the deck of cards to create the pile with
 	 */
 	public Pile(Deck<GCard> cards) {
 		super(cards);
 		addEmptyRect();
 		layout();
 	}
+
 
 	private void addEmptyRect() {
 	    emptyRect = new GRect(GCard.cardWidth(), GCard.cardHeight());
@@ -34,177 +34,101 @@ public class Pile extends GDeck {
 
 	/**
 	 * Picks up a pile containing the given number of cards
-	 * 
-	 * @param numCards
-	 *            the amount of cards to remove
+	 * @param numCards the amount of cards to remove
 	 * @return a new pile
 	 */
-	private Pile pickUp(int numCards) {
-		if (deck.get(numCards - 1).isFaceUp()) {
-			Deck<GCard> subDeck = cards.deal(numCards);
+	public Pile pickUp(int numCards) {
+		Pile subPile = new Pile(deal(numCards));
+		
+		if (subPile.canPickUp()) {
+			deck.get(deck.size()).flipOver();
 			layout();
-			return new Pile(subDeck);
+			return subPile;
+		} else {
+			super.add(subPile);
+			return null;
 		}
-		return null;
 	}
 
 	
 	/**
 	 * Picks up a pile containing the given card and all cards preceding it
-	 * 
-	 * @param card
-	 *            the card to pick up
+	 * @param card the card to pick up
 	 * @return
 	 */
 	public Pile pickUp(Card card) {
-		if (!canPickUp(card)) return null;
-		int index = cards.indexOf(card);
-		if (index == -1)
-			return null;
+		int index = deck.indexOf(card);
+		if (index == -1) return null;
 		return pickUp(index + 1);
-	}
-
-	public void putDown(GCard card) {
-		cards.add(0, card);
-		add(card);
-		layout();
 	}
 
 
 	/**
-	 * Adds a pile on top
-	 * 
-	 * @param pile
+	 * Returns whether or not the pile can be legally picked up
+	 * @return true if the pile can be picked up or false otherwise
 	 */
-	public void putDown(Pile pile) {
-		cards.addAll(pile.getCards());
-		for (Card c : pile.getCards()) {
-			add((GCard) c);
-		}
+	public boolean canPickUp() {
+		return true;
+	}
+	
+	/**
+	 * Adds a card on top
+	 * @param card the card to add on top
+	 */
+	public void add(GCard card) {
+		super.add(card);
+		layout();
+	}
+
+	/**
+	 * Adds a pile on top
+	 * @param pile the pile to add on top
+	 */
+	public void add(Pile pile) {
+		super.addAll(pile);
 		layout();
 	}
 
 	/**
 	 * Returns the card at the given point on the canvas
-	 * 
-	 * @param x
-	 *            the x coordinate of the point
-	 * @param y
-	 *            the y coordinate of the point
+	 * @param x the x coordinate of the point
+	 * @param y the y coordinate of the point
 	 * @return the Card at the coordinate or null if no card exists
 	 */
-	public Card getCard(double x, double y) {
+	public GCard getCard(double x, double y) {
 		GObject obj = getElementAt(getLocalPoint(x, y));
-		if (obj instanceof Card) {
-			return (Card)obj;
-		} else {
-			return null;
-		}
-	}
-
-	public boolean canPickUp(Card card) {
-		if (card == null) return false;
-		
-		Suit suit = cards.top().getSuit();
-		Rank rank = cards.top().getRank();
-		
-		for(int i=1; i<=cards.indexOf(card); i++) {
-			Card c = cards.get(i);
-			if (!c.isFaceUp()) {
-				System.out.println("NOT FACE UP");
-				return false;
-			}
-			if (c.getSuit() != suit) {
-				System.out.println("WRONG SUIT");
-				return false;
-			}
-			
-			int rank1 = getRankOrdering(rank);
-			int rank2 = getRankOrdering(c.getRank());
-			int diff = rank2-rank1;
-			
-			if (diff != 1) {
-				System.out.println("NOT IN ORDER");
-				return false;
-			}
-			rank = c.getRank();
-		}
-		return true;
+		return obj instanceof GCard? (GCard)obj : null;
 	}
 	
-	public boolean canPutDown(Pile p) {
-		if (cards.isEmpty()) return true;
-		if (!cards.get(0).isFaceUp()) return false;
-		
-		Deck<GCard> d = p.getCards();
-		Card c = d.get(d.size()-1);
-		int rank1 = getRankOrdering(c.getRank());
-		int rank2 = getRankOrdering(cards.get(0).getRank());
-		int diff = rank2-rank1;
-		
-		if (diff!=1) {
-			return false;
-		}
-		
-		return true;
-	}
-	
-	private int getRankOrdering(Rank a) {
-		switch (a) {
-		case ACE:
-			return 0;
-		case DEUCE:
-			return 1;
-		case THREE:
-			return 2;
-		case FOUR:
-			return 3;
-		case FIVE:
-			return 4;
-		case SIX:
-			return 5;
-		case SEVEN:
-			return 6;
-		case EIGHT:
-			return 7;
-		case NINE:
-			return 8;
-		case TEN:
-			return 9;
-		case JACK:
-			return 10;
-		case QUEEN:
-			return 11;
-		default:
-			return 12;
-		
-		}
-	}
-
 	/**
 	 * Flips the top card on the pile
 	 */
 	public void flipTopCard() {
-		if (cards.isEmpty()) return;
-		GCard top = (GCard) cards.get(0);
+		if (deck.isEmpty()) return;
+		GCard top = deck.get(deck.size()-1);
 		if (!top.isFaceUp()) {
 			top.turnFaceUp();
 		}
 	}
-
+	
+	
+	/**
+	 * Modifies the layout to represent the current state of the pile
+	 */
 	private void layout() {
-		if (cards.isEmpty()) {
-			emptyRect.setVisible(true);
-		} else {
-			emptyRect.setVisible(false);
-		}
+		emptyRect.setVisible(deck.isEmpty());
 		
-		double offset = OFFSET_RATIO * GCard.cardHeight();
-		for (int i = 0; i < cards.size(); i++) {
-			GCard c = (GCard) cards.get(cards.size() - 1 - i);
-			c.sendToFront();
-			c.setLocation(0.0, i * offset);
+		for (int i = 0; i < deck.size(); i++) {
+			GCard c = deck.get(i);
+			c.setLocation(0.0, i * OFFSET * scale);
 		}
+	}
+	
+	@Override
+	public void scale(double x, double y) {
+	    super.scale(x, x);
+	    scale *= x;
+	    
 	}
 
 }

@@ -6,7 +6,7 @@ import acm.graphics.GCompound;
 @SuppressWarnings("serial")
 public class GDeck extends GCompound {
 
-    private Deck<GCard> deck;
+    protected Deck<GCard> deck;
     
     public GDeck(Deck<GCard> cards) {
 	this.deck = cards;
@@ -52,7 +52,21 @@ public class GDeck extends GCompound {
 	for (GCard card : deck) super.add(card);
     }
     
+    /**
+     * Adds a deck of GCards
+     * @param cards the deck to add
+     */
+    public void addAll(GDeck cards) {
+	deck.addAll(cards.deck);
+	for (GCard card : deck) super.add(card);
+    }
+    
     public boolean isEmpty() {
 	return deck.isEmpty();
+    }
+
+    public void scale() {
+	// TODO Auto-generated method stub
+	
     }
 }

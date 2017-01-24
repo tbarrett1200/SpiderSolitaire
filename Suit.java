@@ -1,6 +1,5 @@
 /**
  * Models the suit of a playing card.
- * 
  * @author Thomas Barrett
  */
 public enum Suit {

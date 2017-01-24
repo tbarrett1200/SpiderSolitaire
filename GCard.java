@@ -134,6 +134,9 @@ public class GCard extends GCompound implements Card {
 		return BACK_IMAGE.getHeight();
 	}
 
+	public static double aspectRatio() {
+	    return BACK_IMAGE.getWidth()/BACK_IMAGE.getHeight();
+	}
 	/**
 	 * Get the back image for any playing card.
 	 * 

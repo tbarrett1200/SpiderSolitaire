@@ -10,6 +10,8 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class Deck<CardType extends Card> extends ArrayList<CardType> {
 
+	int dealt = 0;
+	
 	/**
 	 * Creates an empty deck
 	 */
@@ -18,7 +20,6 @@ public class Deck<CardType extends Card> extends ArrayList<CardType> {
 
 	/**
 	 * Creates a deck filled with the given cards
-	 * 
 	 * @param cards
 	 */
 	public Deck(List<CardType> cards) {
@@ -27,7 +28,6 @@ public class Deck<CardType extends Card> extends ArrayList<CardType> {
 
 	/**
 	 * Removes and returns the top card from the deck, returns null if none
-	 * 
 	 * @return the top card in the deck
 	 */
 	public CardType deal() {
@@ -40,9 +40,7 @@ public class Deck<CardType extends Card> extends ArrayList<CardType> {
 	
 	/**
 	 * Removes and returns an sub deck from the top of the deck
-	 * 
-	 * @param numCards
-	 *            the number of cards to deal
+	 * @param numCards the number of cards to deal
 	 * @return an array of cards from the top of the deck
 	 */
 	public Deck<CardType> deal(int numCards) {
