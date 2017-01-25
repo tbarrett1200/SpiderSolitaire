@@ -1,4 +1,3 @@
-import acm.graphics.GCompound;
 import acm.graphics.GObject;
 import acm.graphics.GRect;
 
@@ -76,7 +75,6 @@ public class Pile extends GDeck {
 	 * @param card the card to add on top
 	 */
 	public void add(GCard card) {
-	    card.sc
 		super.add(card);
 		layout();
 	}

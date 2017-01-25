@@ -137,7 +137,7 @@ public class SpiderSolitaire extends GraphicsProgram {
 					}
 				}
 			});
-			add(deck, getWidth() - GCard.cardWidth() - GCard.cardWidth() * 0.5 * i, getHeight() - GCard.cardHeight());
+			add(deck, getWidth() - GCard.cardWidth() - GCard.cardWidth() * 0.5 * i - GAP_WIDTH, getHeight() - GCard.cardHeight() - GAP_WIDTH);
 		}
 
 		addMouseListeners();
@@ -160,12 +160,19 @@ public class SpiderSolitaire extends GraphicsProgram {
 			public void componentResized(ComponentEvent e) {
 				double scaleX = getWidth() / wid, scaleY = getHeight() / ht;
 				for (int i = 0; i < getElementCount(); i++) {
-					Object obj = getElement(i);
+					GObject obj = getElement(i);
 					if (obj instanceof GObject) {
 						if (obj instanceof GScalable) {
 							((GScalable) obj).scale(scaleX, scaleY);
 						}
-						((GObject) obj).setLocation(((GObject) obj).getX() * scaleX, ((GObject) obj).getY() * scaleY);
+						
+						
+						 ((GObject) obj).setLocation(((GObject) obj).getX() * scaleX, ((GObject) obj).getY() * scaleX);
+						 
+						 if (obj instanceof GDeck && !(obj instanceof Pile)) {
+						     obj.setLocation(obj.getX(), getHeight()-obj.getHeight()-GAP_WIDTH);
+						 }
+					
 					}
 				}
 				wid = getWidth();

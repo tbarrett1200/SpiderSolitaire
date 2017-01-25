@@ -65,8 +65,9 @@ public class GDeck extends GCompound {
 	return deck.isEmpty();
     }
 
-    public void scale() {
-	// TODO Auto-generated method stub
-	
+    @Override
+    public void scale(double x, double y) {
+	super.scale(x, x);	    
     }
+
 }
