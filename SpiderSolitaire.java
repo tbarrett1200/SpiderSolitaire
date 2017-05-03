@@ -29,7 +29,7 @@ public class SpiderSolitaire extends JFrame {
 	setupGame();
 	setupNorth();
 	setupSouth();
-	
+
 	add(game);
 	add(north, BorderLayout.NORTH);
 	add(south, BorderLayout.SOUTH);
@@ -37,6 +37,8 @@ public class SpiderSolitaire extends JFrame {
 	pack();
 	setLocationRelativeTo(null);
 	setVisible(true);
+	
+	addListeners();
     }
     
 
@@ -56,6 +58,9 @@ public class SpiderSolitaire extends JFrame {
 
     private void setupGame() {
 	game = new SpiderSolitairePanel();
+    }
+    
+    private void addListeners() {
     }
     
     public static void main(String[] args) {
