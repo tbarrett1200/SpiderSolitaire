@@ -57,7 +57,7 @@ public class SpiderSolitaire extends JFrame {
     }
 
     private void setupGame() {
-	game = new SpiderSolitairePanel();
+	game = new SpiderSolitairePanel(Difficulty.BEGINNER);
     }
     
     private void addListeners() {

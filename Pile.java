@@ -24,6 +24,10 @@ public class Pile extends GDeck {
 		layout();
 	}
 
+	public Pile() {
+	    super(new Deck<GCard>());
+	    addEmptyRect();
+	}
 
 	private void addEmptyRect() {
 	    emptyRect = new GRect(GCard.cardWidth(), GCard.cardHeight());
@@ -58,7 +62,7 @@ public class Pile extends GDeck {
 	public Pile pickUp(Card card) {
 		int index = deck.indexOf(card);
 		if (index == -1) return null;
-		return pickUp(index + 1);
+		return pickUp(deck.size()+1-index);
 	}
 
 

@@ -3,6 +3,8 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import org.omg.Messaging.SyncScopeHelper;
+
 import acm.graphics.GCanvas;
 
 /*
@@ -23,50 +25,75 @@ public class SpiderSolitairePanel extends GCanvas {
     private static final double PILE_WIDTH = GCard.cardWidth();
     private static final double GAP_WIDTH = (INITIAL_WIDTH - PILE_WIDTH * PILE_COUNT) / GAP_COUNT;
 
-    private Pack pack;
     private Difficulty difficulty;
     private Pile[] piles = new Pile[PILE_COUNT];
-    private GDeck decks[] = new GDeck[5];
+    private GPack pack;
     
-    public SpiderSolitairePanel() {
+    public SpiderSolitairePanel(Difficulty d) {
 	setPreferredSize(new Dimension(INITIAL_WIDTH,INITIAL_HEIGHT));
 	setBackground(Color.GREEN.darker());
+	
+	this.difficulty = d;
+	Pack pack = new Pack(difficulty);
+	pack.shuffle();
+	
+	createPiles();
+	dealPiles(pack);
+	addPiles();
+	addDeck(pack);
+	
+	addListeners();
     }
     
-    public void startNewGame() {
-	removeAll();
 
-	difficulty = Difficulty.INTERMEDIATE;
-	pack = new Pack(difficulty);
-	pack.shuffle();
-
+    private void createPiles() {
 	for (int i = 0; i < PILE_COUNT; i++) {
-	    int numCards = i < 4 ? 5 : 4;
-	    Pile p = new Pile(pack.deal(numCards));
-	    piles[i] = p;
-	    p.flipTopCard();
-	    add(p, (i + 1) * GAP_WIDTH + i * PILE_WIDTH, GAP_WIDTH);
+	    piles[i] = new Pile();
 	}
+    }
+    
+    private void dealPiles(Pack pack) {
+	for (int i = 0; i < 44; i++) {
+	    piles[i % PILE_COUNT].add(pack.deal());
+	}
+    }
+    
+    private void addPiles() {
+	for (int i = 0; i < PILE_COUNT; i++) {
+	    piles[i].flipTopCard();
+	    add(piles[i], (i + 1) * GAP_WIDTH + i * PILE_WIDTH, GAP_WIDTH);
+	}
+    }
+    
+    private void addDeck(Pack pack) {
+	this.pack = new GPack(pack);
+	add(this.pack, 50, 450);
+    }
 
-	for (int i = 0; i < 5; i++) {
-	    decks[i] = new GDeck(pack.deal(10));
-	    GDeck deck = decks[i];
-	    deck.addMouseListener(new MouseAdapter() {
+    private void addListeners() {
+	addPackListeners();
+	for (Pile p: piles) {
+	    addMouseListener(new MouseAdapter() {
 		@Override
 		public void mouseClicked(MouseEvent e) {
-		    for (int i = 4; i >= 0; i--) {
-			GDeck deck = decks[i];
-			if (!deck.isEmpty()) {
-			    for (Pile pile : piles)
-				pile.add(deck.deal().flipOver());
-			    break;
-			}
+		    for(int i = 0; i < PILE_COUNT; i++) {
+			Card c = p.getCard(e.getX(), e.getY());
+			p.pickUp(c);
 		    }
 		}
 	    });
-	    add(deck, getWidth() - GCard.cardWidth() - GCard.cardWidth() * 0.5 * i - GAP_WIDTH,
-		    getHeight() - GCard.cardHeight() - GAP_WIDTH);
 	}
-
+    }
+    
+    private void addPackListeners() {
+	pack.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+	        for(int i = 0; i < PILE_COUNT; i++) {
+	            piles[i].add(pack.dealCard());
+	        }
+	        super.mouseClicked(e);
+	    }
+	});
     }
 }
