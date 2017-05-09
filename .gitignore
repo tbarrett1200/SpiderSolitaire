@@ -1,0 +1,25 @@
+.*
+/Card.class
+/GCard.class
+/SpiderSolitaire$1.class
+/SpiderSolitaire.class
+/Rank.class
+/Suit.class
+/Difficulty.class
+/Deck.class
+/Pack.class
+/Pile.class
+/SpiderSolitaire$2.class
+/SpiderSolitaire$3.class
+<<<<<<< HEAD
+/SolitaireUtils.class
+/SpiderSolitaireGame.class
+=======
+/GDeck.class
+>>>>>>> branch 'master' of https://github.com/tbarrett1200/SpiderSolitaire
+/SpiderSolitaire1.class
+/SpiderSolitaire1$1.class
+/SpiderSolitairePanel.class
+/SpiderSolitairePanel$1.class
+/GPack.class
+/SpiderSolitairePanel$2.class
