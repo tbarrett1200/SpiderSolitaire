@@ -1,39 +1,49 @@
-import java.util.ArrayList;
-import java.util.List;
 
-import acm.graphics.GCompound;
 
-/*
- * File: GPack.java
- * Author: Thomas Barrett
- * Created: May 5, 2017
- */
+@SuppressWarnings("serial")
+public class GPack extends GDeck {
 
-public class GPack extends GCompound {
-
-    List<GDeck> decks = new ArrayList<GDeck>();
-    
-    public GPack(Pack pack) {
-	addDecks(pack);
-    }
-    
-    private void addDecks(Pack pack) {
-	for(int i = 0 ; i < 5; i++) {
-	    GDeck deck = new GDeck(pack.deal(10));
-	    decks.add(deck);
-	    add(deck, GCard.cardWidth() * 0.5 * i, 0);
+	private Pile[] piles;
+	private MessageDisplayable message;
+	
+	/**
+	 * Constructor
+	 * @param cards the cards in the GPack
+	 * @param piles the piles to be dealt to
+	 * @param message displays message to user
+	 */
+	public GPack(Deck<GCard> cards, Pile[] piles, MessageDisplayable message) {
+		super(cards);
+		this.piles = piles;
+		this.message = message;
 	}
-    }
-    
-    public GCard dealCard() {
-	GCard card = decks.get(decks.size()-1).deal();
-	layout();
-	return card;
-    }
-    
-    private void layout() {
-	if (decks.get(decks.size()-1).isEmpty()) {
-	    decks.remove(decks.size()-1);
+
+	
+	/**  Deals new cards to the piles if possible */
+	public void dealPack() {
+		if (canDeal()) {
+			for (Pile p: piles) {
+				p.add(deal());
+				p.flipTopCard();
+			}
+		} else {
+			message.displayMessage("New cards cannot be dealt while there is an empty pile");
+		}
 	}
-    }
+	
+	@Override
+	protected void layout() {
+		for (int i = 0; i < deck.size(); i++) {
+			deck.get(i).setLocation(i / 10 * -0.5 * GCard.cardWidth() - GCard.cardWidth(), 0);
+		}
+	}
+
+	/* checks if new cards can be dealt */
+	private boolean canDeal() {
+		for (Pile pile: piles) {
+			if (pile.isEmpty()) return false;
+		}
+		return true;
+	}
+	
 }

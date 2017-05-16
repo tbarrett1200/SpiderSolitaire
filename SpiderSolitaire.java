@@ -1,3 +1,4 @@
+
 import java.awt.BorderLayout;
 
 import javax.swing.JButton;
@@ -13,57 +14,73 @@ import javax.swing.JPanel;
  */
 
 @SuppressWarnings("serial")
-public class SpiderSolitaire extends JFrame {
-    
-    private JLabel statusMessage;
-    private JButton newGameButton;
-    private JComboBox<Difficulty> difficultyComboBox;
-    
-    private JPanel north;
-    private JPanel south;
-    private SpiderSolitairePanel game;
-    
-    public SpiderSolitaire() {
-	setTitle("Spider Solitaire");
-	
-	setupGame();
-	setupNorth();
-	setupSouth();
+public class SpiderSolitaire extends JFrame implements MessageDisplayable {
 
-	add(game);
-	add(north, BorderLayout.NORTH);
-	add(south, BorderLayout.SOUTH);
-	
-	pack();
-	setLocationRelativeTo(null);
-	setVisible(true);
-	
-	addListeners();
-    }
-    
+	private JLabel statusMessage;
+	private JButton newGameButton;
+	private JComboBox<Difficulty> difficultyComboBox;
 
-    private void setupNorth() {
-	north = new JPanel();
-	statusMessage = new JLabel("Welcome to Spider Solitaire");
-	north.add(statusMessage);
-    }
+	private JPanel north;
+	private JPanel south;
+	private SpiderSolitairePanel game;
 
-    private void setupSouth() {
-	south = new JPanel();
-	newGameButton = new JButton("New Game");
-	difficultyComboBox = new JComboBox<Difficulty>(Difficulty.values());
-	south.add(newGameButton);
-	south.add(difficultyComboBox);
-    }
+	public SpiderSolitaire() {
+		setTitle("Spider Solitaire");
 
-    private void setupGame() {
-	game = new SpiderSolitairePanel(Difficulty.BEGINNER);
-    }
-    
-    private void addListeners() {
-    }
-    
-    public static void main(String[] args) {
-	new SpiderSolitaire();
-    }
+		setupGame();
+		setupNorth();
+		setupSouth();
+
+		add(game);
+		add(north, BorderLayout.NORTH);
+		add(south, BorderLayout.SOUTH);
+
+		pack();
+		setLocationRelativeTo(null);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setResizable(false);
+		setVisible(true);
+
+		newGameButton.addActionListener(event -> newGame());
+	}
+
+	/* Sets up the panel to the north of the JFrame */
+	private void setupNorth() {
+		north = new JPanel();
+		statusMessage = new JLabel("Welcome to Spider Solitaire");
+		north.add(statusMessage);
+	}
+
+	/* Sets up the panel to the south of the JFrame */
+	private void setupSouth() {
+		south = new JPanel();
+		newGameButton = new JButton("New Game");
+		difficultyComboBox = new JComboBox<Difficulty>(Difficulty.values());
+		difficultyComboBox.setSelectedItem(Difficulty.INTERMEDIATE);
+		south.add(newGameButton);
+		south.add(difficultyComboBox);
+	}
+
+	/* Sets up the panel that contains the game */
+	private void setupGame() {
+		game = new SpiderSolitairePanel(Difficulty.INTERMEDIATE, this);
+	}
+
+	/* Replaces the game with a new game*/
+	private void newGame() {
+		remove(game);
+		game = new SpiderSolitairePanel((Difficulty)difficultyComboBox.getSelectedItem(), this);
+		add(game);
+		validate();
+	}
+
+	@Override
+	public void displayMessage(String s) {
+		statusMessage.setText(s);
+	}
+
+	public static void main(String[] args) {
+		new SpiderSolitaire();
+	}
+
 }
